@@ -15,4 +15,5 @@ echo "======================------------------"
 cat "$base_dir/$script"
 echo "----------------------=================="
 
-"$base_dir/$script"
+set -x
+source "$base_dir/$script"
