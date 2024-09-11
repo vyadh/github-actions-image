@@ -48,3 +48,10 @@ RUN ./download.sh scripts/helpers/etc-environment.sh && \
     ./download.sh scripts/helpers/invoke-tests.sh && \
     echo "ENABLED=0" >/etc/default/motd-news && \
     ./scripts/build/configure-environment.sh
+
+ENV INSTALLER_SCRIPT_FOLDER=/tmp/build/toolsets
+RUN ./download.sh scripts/helpers/install.sh && \
+    ./download.sh toolsets/toolset-2404.json && \
+    mv toolsets/toolset-2404.json toolsets/toolset.json && \
+    nl scripts/helpers/install.sh && \
+    ./run.sh scripts/build/install-apt-vital.sh
