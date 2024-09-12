@@ -7,25 +7,31 @@ RUN apt update && \
     apt install -y --no-install-recommends \
       curl ca-certificates jq
 
-WORKDIR /tmp/build
-
-# Copy required scripts
-ENV HELPER_SCRIPTS=/tmp/build/scripts/helpers
-COPY --chmod=700 build/download.sh /tmp/build/
-COPY --chmod=700 build/download-dir.sh /tmp/build/
+# Copy required scripts to a download folder (avoiding changes that would invalidate the cache)
+ARG DOWNLOAD_DIR=/tmp/download
+WORKDIR $DOWNLOAD_DIR
+COPY --chmod=700 build/download.sh $DOWNLOAD_DIR/
+COPY --chmod=700 build/download-dir.sh $DOWNLOAD_DIR/
 
 # Download resources
-RUN --mount=type=secret,id=GITHUB_TOKEN ./download-dir.sh scripts/helpers
 RUN --mount=type=secret,id=GITHUB_TOKEN ./download-dir.sh scripts/build
+RUN --mount=type=secret,id=GITHUB_TOKEN ./download-dir.sh scripts/helpers
 RUN --mount=type=secret,id=GITHUB_TOKEN ./download-dir.sh scripts/tests
 RUN --mount=type=secret,id=GITHUB_TOKEN ./download-dir.sh toolsets
 
-# Copy required scripts
-COPY --chmod=700 build/run.sh /tmp/build/
+# Setup directories. Must be in these specific directories due to hard-coded paths
+ARG BASE_DIR=/imagegeneration
+ARG BUILD_DIR=/imagegeneration/build
+WORKDIR $BUILD_DIR
+ENV HELPER_SCRIPTS=$BASE_DIR/helpers
+ENV INSTALLER_SCRIPT_FOLDER=$BUILD_DIR/toolsets
 
-# Move specific path for tests due to hard-coded paths
-RUN mkdir -p /imagegeneration/tests && \
-    mv "scripts/tests" "/imagegeneration/tests"
+# Relocate required scripts
+RUN mv $DOWNLOAD_DIR/scripts/tests $BASE_DIR/tests
+RUN mv $DOWNLOAD_DIR/scripts/helpers $BASE_DIR/helpers
+RUN mv $DOWNLOAD_DIR/scripts scripts
+RUN mv $DOWNLOAD_DIR/toolsets toolsets
+RUN cp toolsets/toolset-2404.json toolsets/toolset.json
 
 # Configuration for the assumptions scripts make about APT
 RUN echo "APT::Get::Assume-Yes \"true\";" > /etc/apt/apt.conf.d/90assumeyes
@@ -33,7 +39,9 @@ RUN echo "APT::Get::Assume-Yes \"true\";" > /etc/apt/apt.conf.d/90assumeyes
 # Fake out commands that won't work in a container
 COPY --chmod=700 scripts/systemctl-fake.sh /usr/sbin/systemctl
 
-# Start of scripts to be run
+# Invoke GitHub install scripts
+
+COPY --chmod=700 build/run.sh ./
 
 RUN ./run.sh scripts/build/configure-apt-mock.sh
 
@@ -45,7 +53,7 @@ RUN ./run.sh scripts/build/install-ms-repos.sh && \
 
 RUN ./run.sh scripts/build/configure-limits.sh
 
-ARG IMAGEDATA_FILE=imagegeneration/imagedata.json
+ARG IMAGEDATA_FILE=$BASE_DIR/imagedata.json
 ARG IMAGE_VERSION=0.0.0
 RUN mkdir -p $(dirname $IMAGEDATA_FILE) && \
     ./run.sh scripts/build/configure-image-data.sh
@@ -61,15 +69,70 @@ RUN apt install sudo && \
     echo "ENABLED=0" >/etc/default/motd-news && \
     ./scripts/build/configure-environment.sh
 
-ENV INSTALLER_SCRIPT_FOLDER=/tmp/build/toolsets
-RUN mv toolsets/toolset-2404.json toolsets/toolset.json && \
-    ./run.sh scripts/build/install-apt-vital.sh
+RUN ./run.sh scripts/build/install-apt-vital.sh
 
 RUN ./run.sh scripts/build/install-powershell.sh
-
 RUN pwsh -f scripts/build/Install-PowerShellModules.ps1
 RUN pwsh -f scripts/build/Install-PowerShellAzModules.ps1
 
 RUN ./run.sh scripts/build/install-actions-cache.sh
 RUN ./run.sh scripts/build/install-runner-package.sh
 RUN ./run.sh scripts/build/install-apt-common.sh
+
+#RUN ./run.sh scripts/build/install-azcopy.sh
+#RUN ./run.sh scripts/build/install-azure-cli.sh
+#RUN ./run.sh scripts/build/install-azure-devops-cli.sh
+#RUN ./run.sh scripts/build/install-bicep.sh
+#RUN ./run.sh scripts/build/install-aliyun-cli.sh
+#RUN ./run.sh scripts/build/install-apache.sh
+#RUN ./run.sh scripts/build/install-aws-tools.sh
+#RUN ./run.sh scripts/build/install-clang.sh
+#RUN ./run.sh scripts/build/install-swift.sh
+#RUN ./run.sh scripts/build/install-cmake.sh
+#RUN ./run.sh scripts/build/install-codeql-bundle.sh
+#RUN ./run.sh scripts/build/install-container-tools.sh
+#RUN ./run.sh scripts/build/install-dotnetcore-sdk.sh
+#RUN ./run.sh scripts/build/install-firefox.sh
+#RUN ./run.sh scripts/build/install-microsoft-edge.sh
+#RUN ./run.sh scripts/build/install-gcc-compilers.sh
+#RUN ./run.sh scripts/build/install-gfortran.sh
+#RUN ./run.sh scripts/build/install-git.sh
+#RUN ./run.sh scripts/build/install-git-lfs.sh
+#RUN ./run.sh scripts/build/install-github-cli.sh
+#RUN ./run.sh scripts/build/install-google-chrome.sh
+#RUN ./run.sh scripts/build/install-google-cloud-cli.sh
+#RUN ./run.sh scripts/build/install-haskell.sh
+#RUN ./run.sh scripts/build/install-heroku.sh
+#RUN ./run.sh scripts/build/install-java-tools.sh
+#RUN ./run.sh scripts/build/install-kubernetes-tools.sh
+#RUN ./run.sh scripts/build/install-oc-cli.sh
+#RUN ./run.sh scripts/build/install-leiningen.sh
+#RUN ./run.sh scripts/build/install-miniconda.sh
+#RUN ./run.sh scripts/build/install-mono.sh
+#RUN ./run.sh scripts/build/install-kotlin.sh
+#RUN ./run.sh scripts/build/install-mysql.sh
+#RUN ./run.sh scripts/build/install-mssql-tools.sh
+#RUN ./run.sh scripts/build/install-sqlpackage.sh
+#RUN ./run.sh scripts/build/install-nginx.sh
+#RUN ./run.sh scripts/build/install-nvm.sh
+#RUN ./run.sh scripts/build/install-nodejs.sh
+#RUN ./run.sh scripts/build/install-zstd.s
+#RUN ./run.sh scripts/build/install-bazel.sh
+#RUN ./run.sh scripts/build/install-oras-cli.sh
+#RUN ./run.sh scripts/build/install-php.sh
+#RUN ./run.sh scripts/build/install-postgresql.sh
+#RUN ./run.sh scripts/build/install-pulumi.sh
+#RUN ./run.sh scripts/build/install-ruby.sh
+#RUN ./run.sh scripts/build/install-rlang.sh
+#RUN ./run.sh scripts/build/install-rust.sh
+#RUN ./run.sh scripts/build/install-julia.sh
+#RUN ./run.sh scripts/build/install-sbt.sh
+#RUN ./run.sh scripts/build/install-selenium.sh
+#RUN ./run.sh scripts/build/install-terraform.sh
+#RUN ./run.sh scripts/build/install-packer.sh
+#RUN ./run.sh scripts/build/install-vcpkg.sh
+#RUN ./run.sh scripts/build/configure-dpkg.sh
+#RUN ./run.sh scripts/build/install-yq.sh
+#RUN ./run.sh scripts/build/install-android-sdk.sh
+#RUN ./run.sh scripts/build/install-pypy.sh
+#RUN ./run.sh scripts/build/install-pyth
