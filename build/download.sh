@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -eo pipefail
 
 if [ -z "$1" ]; then
   echo "Usage: $0 <script>"

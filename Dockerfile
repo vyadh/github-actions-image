@@ -53,5 +53,16 @@ ENV INSTALLER_SCRIPT_FOLDER=/tmp/build/toolsets
 RUN ./download.sh scripts/helpers/install.sh && \
     ./download.sh toolsets/toolset-2404.json && \
     mv toolsets/toolset-2404.json toolsets/toolset.json && \
-    nl scripts/helpers/install.sh && \
     ./run.sh scripts/build/install-apt-vital.sh
+
+RUN ./run.sh scripts/build/install-powershell.sh
+
+RUN ./download.sh scripts/tests/Helpers.psm1 && \
+    ./download.sh scripts/helpers/Common.Helpers.psm1 && \
+    ./download.sh scripts/tests/PowerShellModules.Tests.ps1 && \
+    mkdir -p /imagegeneration/tests && \
+    mv scripts/tests/PowerShellModules.Tests.ps1 /imagegeneration/tests/PowerShellModules.Tests.ps1 && \
+    ./download.sh scripts/build/Install-PowerShellModules.ps1 && \
+    pwsh -f scripts/build/Install-PowerShellModules.ps1
+RUN ./download.sh scripts/build/Install-PowerShellAzModules.ps1 && \
+    pwsh -f scripts/build/Install-PowerShellAzModules.ps1
