@@ -88,7 +88,6 @@ RUN ./run.sh scripts/build/install-azcopy.sh
 RUN ./run.sh scripts/build/install-azure-cli.sh
 RUN ./run.sh scripts/build/install-azure-devops-cli.sh
 RUN ./run.sh scripts/build/install-bicep.sh
-RUN ./run.sh scripts/build/install-aliyun-cli.sh
 RUN ./run.sh scripts/build/install-apache.sh
 RUN ./run.sh scripts/build/install-aws-tools.sh
 RUN ./run.sh scripts/build/install-clang.sh
@@ -101,44 +100,31 @@ RUN sed -i '/"podman CNI plugins"/,/}/ s/.*//g' $BASE_DIR/tests/Tools.Tests.ps1
 
 RUN ./run.sh scripts/build/install-container-tools.sh
 RUN ./run.sh scripts/build/install-dotnetcore-sdk.sh
-RUN ./run.sh scripts/build/install-firefox.sh
-RUN ./run.sh scripts/build/install-microsoft-edge.sh
 RUN ./run.sh scripts/build/install-gcc-compilers.sh
 RUN ./run.sh scripts/build/install-gfortran.sh
 RUN ./run.sh scripts/build/install-git.sh
 RUN ./run.sh scripts/build/install-git-lfs.sh
 RUN ./run.sh scripts/build/install-github-cli.sh
 RUN ./run.sh scripts/build/install-google-chrome.sh
-RUN ./run.sh scripts/build/install-google-cloud-cli.sh
 RUN ./run.sh scripts/build/install-haskell.sh
-RUN ./run.sh scripts/build/install-heroku.sh
 RUN ./run.sh scripts/build/install-java-tools.sh
 RUN ./run.sh scripts/build/install-kubernetes-tools.sh
-RUN ./run.sh scripts/build/install-oc-cli.sh
-RUN ./run.sh scripts/build/install-leiningen.sh
 RUN ./run.sh scripts/build/install-miniconda.sh
-RUN ./run.sh scripts/build/install-mono.sh
 RUN ./run.sh scripts/build/install-kotlin.sh
 
 # Requires system booted with systemd
 #RUN ./run.sh scripts/build/install-mysql.sh
 
-RUN ./run.sh scripts/build/install-mssql-tools.sh
-RUN ./run.sh scripts/build/install-sqlpackage.sh
-
 # Requires system booted with systemd
 #RUN ./run.sh scripts/build/install-nginx.sh
 
-RUN ./run.sh scripts/build/install-nvm.sh
 RUN ./run.sh scripts/build/install-nodejs.sh
-RUN ./run.sh scripts/build/install-zstd.sh
 
 RUN useradd -m -s /bin/bash -u 1001 bazel && \
     echo 'echo "1.0"' >/usr/local/bin/version && \
     chmod +x /usr/local/bin/version
 RUN ./run.sh scripts/build/install-bazel.sh
 
-RUN ./run.sh scripts/build/install-oras-cli.sh
 RUN ./run.sh scripts/build/install-php.sh
 
 # Requires system booted with systemd
@@ -146,3 +132,14 @@ RUN ./run.sh scripts/build/install-php.sh
 
 RUN ./run.sh scripts/build/install-pulumi.sh
 RUN ./run.sh scripts/build/install-ruby.sh
+RUN ./run.sh scripts/build/install-rust.sh
+RUN ./run.sh scripts/build/install-julia.sh
+RUN ./run.sh scripts/build/install-selenium.sh
+RUN ./run.sh scripts/build/install-packer.sh
+RUN ./run.sh scripts/build/install-vcpkg.sh
+RUN ./run.sh scripts/build/configure-dpkg.sh
+RUN ./run.sh scripts/build/install-yq.sh
+RUN ./run.sh scripts/build/install-android-sdk.sh
+RUN ./run.sh scripts/build/install-pypy.sh
+RUN ./run.sh scripts/build/install-python.sh
+RUN ./run.sh scripts/build/install-zstd.sh
