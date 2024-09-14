@@ -44,7 +44,7 @@ COPY --chmod=700 build/run.sh ./
 COPY --chmod=700 build/container-setup.sh ./
 COPY --chmod=700 build/install-all.sh ./
 
-# Configuration for the assumptions scripts make
+# Configuration for the assumptions the GitHub scripts make
 RUN ./container-setup.sh
 
 # Invoke GitHub install scripts
