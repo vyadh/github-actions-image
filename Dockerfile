@@ -97,9 +97,10 @@ RUN ./run.sh scripts/build/install-codeql-bundle.sh
 
 # We cannot create a podman network so we need to disable these specific tests
 RUN sed -i '/"podman CNI plugins"/,/}/ s/.*//g' $BASE_DIR/tests/Tools.Tests.ps1
-
 RUN ./run.sh scripts/build/install-container-tools.sh
+
 RUN ./run.sh scripts/build/install-dotnetcore-sdk.sh
+RUN ./run.sh scripts/build/install-microsoft-edge.sh
 RUN ./run.sh scripts/build/install-gcc-compilers.sh
 RUN ./run.sh scripts/build/install-gfortran.sh
 RUN ./run.sh scripts/build/install-git.sh
@@ -143,3 +144,26 @@ RUN ./run.sh scripts/build/install-android-sdk.sh
 RUN ./run.sh scripts/build/install-pypy.sh
 RUN ./run.sh scripts/build/install-python.sh
 RUN ./run.sh scripts/build/install-zstd.sh
+
+# A systemctl startup. Needs customisation
+#RUN ./run.sh scripts/build/install-docker.sh
+
+RUN pwsh -f scripts/build/Install-Toolset.ps1
+
+# Weird path issues with yamllint and ansible
+#RUN ./run.sh scripts/build/install-pipx-packages.sh
+
+RUN ./run.sh scripts/build/install-homebrew.sh
+
+# Needs systemctl
+#RUN ./run.sh scripts/build/configure-snap.sh
+
+RUN echo 'echo "Skipping: $0 $*"' > /usr/sbin/journalctl && \
+    chmod +x /usr/sbin/journalctl
+RUN ./run.sh scripts/build/cleanup.sh
+
+ENV HELPER_SCRIPT_FOLDER=$HELPER_SCRIPTS
+ENV IMAGE_FOLDER=/imagegeneration
+RUN mkdir /imagegeneration/post-generation
+RUN mkdir /etc/needrestart && touch /etc/needrestart/needrestart.conf
+RUN ./run.sh scripts/build/configure-system.sh
